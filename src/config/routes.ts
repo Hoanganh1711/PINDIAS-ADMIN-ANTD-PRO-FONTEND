@@ -3,13 +3,20 @@ import { lazy } from 'react'
 const Home = lazy(() => import('../pages/Home'))
 const About = lazy(() => import('../pages/About'))
 const NotFound = lazy(() => import('../pages/NotFound'))
+const Layout = lazy(() => import('../components/Layout/LayoutComponent'))
 
 const routes = [
+    {
+        path: '/home',
+        exact: true,
+        component: Home,
+        name: 'Home',
+    },
     {
         path: '/',
         exact: true,
         component: Home,
-        name: 'Home',
+        name: 'Layout',
     },
     {
         path: '/home',
