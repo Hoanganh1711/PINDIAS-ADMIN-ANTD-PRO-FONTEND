@@ -1,5 +1,5 @@
-import { Suspense } from 'react'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import { Suspense, useEffect } from 'react'
+import { BrowserRouter, Link, Route, Routes, useParams } from 'react-router-dom'
 import routes from './config/routes'
 // import { Link } from '@/components'
 import '@ant-design/pro-components/dist/components.css'
@@ -10,6 +10,10 @@ import type { ProSettings } from '@ant-design/pro-components'
 import { PageContainer, ProLayout, SettingDrawer } from '@ant-design/pro-components'
 import { Avatar, Button, Descriptions, Result, Space, Statistic } from 'antd'
 import { useState } from 'react'
+import defaultProps from './components/Layout/_defaultProps'
+import Home from './pages/Home'
+import About from './pages/About'
+import NotFound from './pages/NotFound'
 
 const content = (
     <Descriptions size="small" column={2}>
@@ -24,71 +28,150 @@ const content = (
 )
 
 function App() {
-    console.log('import.meta.env', import.meta.env.VITE_APP_NAME)
-    const myRoutes = routes.map((item: any) => {
-        console.log(item)
+    const { params } = useParams()
+    const [settings, setSetting] = useState<Partial<ProSettings> | undefined>()
+    const [pathname, setPathname] = useState('/welcome')
 
-        return <Route key={item.path} {...item} element={<item.component />} />
-    })
+    useEffect(() => {
+        // window.location.pathname = pathname
+    }, [])
+
+    console.log('params', params);
     return (
         <>
-            <LayoutComponent />
+            {/* <LayoutComponent /> */}
 
             <Suspense fallback={<div>Loading...</div>}>
                 <BrowserRouter>
-                    {/* <PageContainer
-                        content={content}
-                        tabList={[
-                            {
-                                tab: '基本信息',
-                                key: 'base',
-                            },
-                            {
-                                tab: '详细信息',
-                                key: 'info',
-                            },
-                        ]}
-                        extraContent={
-                            <Space size={24}>
-                                <Statistic
-                                    title="Feedback"
-                                    value={1128}
-                                    prefix={<LikeOutlined />}
-                                />
-                                <Statistic title="Unmerged" value={93} suffix="/ 100" />
-                            </Space>
-                        }
-                        extra={[
-                            <Button key="3">操作</Button>,
-                            <Button key="2">操作</Button>,
-                            <Button key="1" type="primary">
-                                主操作
-                            </Button>,
-                        ]}
-                        footer={[
-                            <Button key="3">重置</Button>,
-                            <Button key="2" type="primary">
-                                提交
-                            </Button>,
-                        ]}
+                    <div
+                        id="test-pro-layout"
+                        style={{
+                            height: '100vh',
+                        }}
                     >
-                        <div
-                            style={{
-                                height: '120vh',
+                        <ProLayout
+                            {...defaultProps}
+                            location={{
+                                pathname,
                             }}
+                            menuFooterRender={props => {
+                                return (
+                                    <a
+                                        style={{
+                                            lineHeight: '48rpx',
+                                            display: 'flex',
+                                            height: 48,
+                                            color: 'rgba(255, 255, 255, 0.65)',
+                                            alignItems: 'center',
+                                        }}
+                                        href="https://pindias.com/"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        <img
+                                            alt="pro-logo"
+                                            src="https://res.cloudinary.com/metawayholdings-logo/image/upload/v1657336244/Metaway%20Holdings%20Image/Logo_Meta_512px_gpfe6y.png"
+                                            style={{
+                                                width: 16,
+                                                height: 16,
+                                                margin: '0 16px',
+                                                marginRight: 10,
+                                            }}
+                                        />
+                                        {!props?.collapsed && 'Preview Pro'}
+                                    </a>
+                                )
+                            }}
+                            onMenuHeaderClick={e => console.log('tét', e)}
+                            menuItemRender={(item, dom) => (
+                                <span
+                                    onClick={() => {
+                                        console.log('asdasdasd', item.path);
+
+                                        setPathname(item.path ? item.path : '/welcome')
+                                    }}
+
+                                >
+                                    {
+                                        item.path?.includes('https') ? (
+                                            <a href={item.path} target={'_blank'}>{dom}</a>
+                                        ) : (
+                                            <Link to={`${item.path}`} >{dom}</Link>
+                                        )
+                                    }
+                                </span>
+                            )}
+                            rightContentRender={() => (
+                                <div>
+                                    <Avatar shape="square" size="small" icon={<UserOutlined />} />
+                                </div>
+                            )}
+                            {...settings}
                         >
-                            <Result
-                                status="404"
-                                style={{
-                                    height: '100%',
-                                    background: '#fff',
-                                }}
-                                title="Hello World"
-                                subTitle="Sorry, you are not authorized to access this page."
-                                extra={<Button type="primary">Back Home</Button>}
-                            />
-                        </div>
-                    </PageContainer> */}
+                            <PageContainer
+                                content={content}
+                                tabList={[
+                                    {
+                                        tab: 'Basic Information',
+                                        key: 'base',
+                                    },
+                                    {
+                                        tab: 'Detail Information',
+                                        key: 'info',
+                                    },
+                                ]}
+                                extraContent={
+                                    <Space size={24}>
+                                        <Statistic
+                                            title="Feedback"
+                                            value={1128}
+                                            prefix={<LikeOutlined />}
+                                        />
+                                        <Statistic title="Unmerged" value={93} suffix="/ 100" />
+                                    </Space>
+                                }
+                                extra={[
+                                    <Button key="3">Action</Button>,
+                                    <Button key="2">Action</Button>,
+                                    <Button key="1" type="primary">
+                                        Main Operation
+                                    </Button>,
+                                ]}
+                                footer={[
+                                    <Button key="3">Reset</Button>,
+                                    <Button key="2" type="primary">
+                                        Submit
+                                    </Button>,
+                                ]}
+                            >
+
+
+                                <div
+                                    style={{
+                                        height: '100vh',
+                                    }}
+                                >
+                                    <Routes >
+                                        <Route path={'/'} element={<Home />} />
+                                        <Route path={'/welcome'} element={<Home />} />
+                                        <Route path={'/about'} element={<About />} />
+                                        <Route path="*" element={<NotFound />} />
+                                    </Routes>
+                                </div>
+                            </PageContainer>
+                        </ProLayout>
+                        <SettingDrawer
+                            
+                            pathname={pathname}
+                            enableDarkTheme
+                            getContainer={() => document.getElementById('test-pro-layout')}
+                            settings={settings}
+                            onSettingChange={changeSetting => {
+                                setSetting(changeSetting)
+                            }}
+                            disableUrlParams={false}
+                        />
+                    </div>
                 </BrowserRouter>
             </Suspense>
         </>
