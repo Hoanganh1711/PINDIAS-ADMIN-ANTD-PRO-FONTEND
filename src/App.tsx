@@ -1,59 +1,144 @@
 import { Suspense, useEffect } from 'react'
 import { BrowserRouter, Link, Route, Routes, useParams } from 'react-router-dom'
-import routes from './config/routes'
-// import { Link } from '@/components'
 import '@ant-design/pro-components/dist/components.css'
-import LayoutComponent from './components/Layout/LayoutComponent'
+import './App.css'
+import logo from './public/img/logo-pindias-small.png'
 
-import { LikeOutlined, UserOutlined } from '@ant-design/icons'
+import { UserOutlined } from '@ant-design/icons'
 import type { ProSettings } from '@ant-design/pro-components'
 import { PageContainer, ProLayout, SettingDrawer } from '@ant-design/pro-components'
-import { Avatar, Button, Descriptions, Result, Space, Statistic } from 'antd'
+import { Avatar, Descriptions, message } from 'antd'
 import { useState } from 'react'
-import defaultProps from './components/Layout/_defaultProps'
+import defaultProps from './config/Routes/_defaultProps'
 import Home from './pages/Home'
 import About from './pages/About'
 import NotFound from './pages/NotFound'
-
-const content = (
-    <Descriptions size="small" column={2}>
-        <Descriptions.Item label="创建人">张三</Descriptions.Item>
-        <Descriptions.Item label="联系方式">
-            <a>421421</a>
-        </Descriptions.Item>
-        <Descriptions.Item label="创建时间">2017-01-10</Descriptions.Item>
-        <Descriptions.Item label="更新时间">2017-10-10</Descriptions.Item>
-        <Descriptions.Item label="备注">中国浙江省杭州市西湖区古翠路</Descriptions.Item>
-    </Descriptions>
-)
+import RealEstateAllList from './components/RealEstateManagement/RealEstateAllList'
+import { useSelector } from 'react-redux'
+import { usePageVisibility } from './Hooks/TabChangeHelper'
+import { tokenExpiredHandler } from './Hooks/fetchHandler'
+import Cookies from 'universal-cookie'
+import HeaderComponent from './components/Layout/HeaderComponent'
 
 function App() {
     const { params } = useParams()
     const [settings, setSetting] = useState<Partial<ProSettings> | undefined>()
     const [pathname, setPathname] = useState('/welcome')
+    const cookies = new Cookies()
+    // const { t } = useTranslation();
+    const [isLogin, setIsLogin] = useState(false)
+    // const isAdmin = useSelector(isAdminSelector);
+    const [actions, setactions] = useState()
+    const isBrowserTabChanged = usePageVisibility()
 
     useEffect(() => {
-        // window.location.pathname = pathname
+        const accessToken = cookies.get('accessToken')
+        if (accessToken && accessToken != 'undefined') {
+            // Logged in
+            setIsLogin(true)
+        } else {
+            // if not logged in, redirect to login url
+            tokenExpiredHandler()
+        }
+    }, [isBrowserTabChanged])
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const token: any = params.get('token')
+        const continueUrl: any = params.get('continue')
+        if (token) {
+            const currentTime = new Date().getTime()
+            // get 7 days later
+            const sevenDaysLater = new Date(currentTime + 7 * 24 * 60 * 60 * 1000)
+            const local = window.location.href.includes('localhost')
+            if (local) {
+                cookies.set('accessToken', token, { path: '/', expires: sevenDaysLater })
+            } else {
+                cookies.set('accessToken', token, {
+                    path: '/',
+                    domain: '.pindias.com',
+                    expires: sevenDaysLater,
+                })
+            }
+            cookies.set('showLoggedInMessage', '1stTrue', { path: '/' })
+            if (continueUrl) {
+                window.location.href = continueUrl
+            } else {
+                // move to home page
+                window.location.href = '/'
+            }
+        }
     }, [])
 
-    console.log('params', params);
+    useEffect(() => {
+        const showLoggedInMessage = cookies.get('showLoggedInMessage')
+        if (showLoggedInMessage === '1stTrue') {
+            cookies.set('showLoggedInMessage', '2ndTrue', { path: '/' })
+        } else if (showLoggedInMessage === '2ndTrue') {
+            message.success('You are logged in!')
+            cookies.set('showLoggedInMessage', 'false', { path: '/' })
+        }
+    }, [])
+    const [uri] = window.location.href.split('#')
+
     return (
         <>
-            {/* <LayoutComponent /> */}
-
             <Suspense fallback={<div>Loading...</div>}>
                 <BrowserRouter>
                     <div
-                        id="test-pro-layout"
+                        id="main-pro-layout"
                         style={{
                             height: '100vh',
                         }}
                     >
                         <ProLayout
+                            navTheme="light"
+                            fixSiderbar={true}
                             {...defaultProps}
                             location={{
                                 pathname,
                             }}
+                            pageTitleRender={(item: any, dom) => {
+                                return dom === ''
+                                    ? 'Pindias - Real Estate Management'
+                                    : dom + ' | Agent - Pindias'
+                            }}
+                            menuItemRender={(item, dom) => (
+                                <span
+                                    onClick={() => {
+                                        setPathname(item.path ? item.path : '/welcome')
+                                    }}
+                                >
+                                    {item.path?.includes('https') ? (
+                                        <a href={item.path} target={'_blank'}>
+                                            {dom}
+                                        </a>
+                                    ) : (
+                                        <Link to={`${item.path}`}>{dom}</Link>
+                                    )}
+                                </span>
+                            )}
+                            breadcrumbRender={(routers: any) => [
+                                {
+                                    path: '/',
+                                    breadcrumbName: 'Home',
+                                },
+                                ...routers,
+                            ]}
+                            itemRender={(route, params, routes, paths) => {
+                                const first = routes.indexOf(route) === 0
+                                return first ? (
+                                    <Link to={paths.join('/')}>{route.breadcrumbName}</Link>
+                                ) : (
+                                    <span>{route.breadcrumbName}</span>
+                                )
+                            }}
+                            menuHeaderRender={() => (
+                                <Link to="/">
+                                    <img className="pindias-logo-img" alt="logo" src={logo} />
+                                    <h1 className="pindias-logo-text">Pindias</h1>
+                                </Link>
+                            )}
                             menuFooterRender={props => {
                                 return (
                                     <a
@@ -83,94 +168,32 @@ function App() {
                                 )
                             }}
                             onMenuHeaderClick={e => console.log('tét', e)}
-                            menuItemRender={(item, dom) => (
-                                <span
-                                    onClick={() => {
-                                        console.log('asdasdasd', item.path);
-
-                                        setPathname(item.path ? item.path : '/welcome')
-                                    }}
-
-                                >
-                                    {
-                                        item.path?.includes('https') ? (
-                                            <a href={item.path} target={'_blank'}>{dom}</a>
-                                        ) : (
-                                            <Link to={`${item.path}`} >{dom}</Link>
-                                        )
-                                    }
-                                </span>
-                            )}
                             rightContentRender={() => (
                                 <div>
-                                    <Avatar shape="square" size="small" icon={<UserOutlined />} />
+                                    <HeaderComponent />
+                                    {/* <Avatar shape="square" size="small" icon={<UserOutlined />} /> */}
                                 </div>
                             )}
-                            {...settings}
                         >
-                            <PageContainer
-                                content={content}
-                                tabList={[
-                                    {
-                                        tab: 'Basic Information',
-                                        key: 'base',
-                                    },
-                                    {
-                                        tab: 'Detail Information',
-                                        key: 'info',
-                                    },
-                                ]}
-                                extraContent={
-                                    <Space size={24}>
-                                        <Statistic
-                                            title="Feedback"
-                                            value={1128}
-                                            prefix={<LikeOutlined />}
-                                        />
-                                        <Statistic title="Unmerged" value={93} suffix="/ 100" />
-                                    </Space>
-                                }
-                                extra={[
-                                    <Button key="3">Action</Button>,
-                                    <Button key="2">Action</Button>,
-                                    <Button key="1" type="primary">
-                                        Main Operation
-                                    </Button>,
-                                ]}
-                                footer={[
-                                    <Button key="3">Reset</Button>,
-                                    <Button key="2" type="primary">
-                                        Submit
-                                    </Button>,
-                                ]}
-                            >
-
-
+                            <PageContainer>
                                 <div
                                     style={{
                                         height: '100vh',
                                     }}
                                 >
-                                    <Routes >
-                                        <Route path={'/'} element={<Home />} />
-                                        <Route path={'/welcome'} element={<Home />} />
-                                        <Route path={'/about'} element={<About />} />
+                                    <Routes>
+                                        <Route path="/" element={<RealEstateAllList />} />
+                                        {/* ============= real estate ============= */}
+                                        <Route
+                                            path="/real-estate/all"
+                                            element={<RealEstateAllList />}
+                                        />
                                         <Route path="*" element={<NotFound />} />
+
                                     </Routes>
                                 </div>
                             </PageContainer>
                         </ProLayout>
-                        <SettingDrawer
-                            
-                            pathname={pathname}
-                            enableDarkTheme
-                            getContainer={() => document.getElementById('test-pro-layout')}
-                            settings={settings}
-                            onSettingChange={changeSetting => {
-                                setSetting(changeSetting)
-                            }}
-                            disableUrlParams={false}
-                        />
                     </div>
                 </BrowserRouter>
             </Suspense>

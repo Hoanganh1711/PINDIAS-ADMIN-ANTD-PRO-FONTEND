@@ -3,7 +3,7 @@ import type { ProSettings } from '@ant-design/pro-components'
 import { PageContainer, ProLayout, SettingDrawer } from '@ant-design/pro-components'
 import { Avatar, Button, Descriptions, Result, Space, Statistic } from 'antd'
 import { useState } from 'react'
-import defaultProps from './_defaultProps'
+import defaultProps from '../../config/Routes/_defaultProps'
 
 const content = (
     <Descriptions size="small" column={2}>

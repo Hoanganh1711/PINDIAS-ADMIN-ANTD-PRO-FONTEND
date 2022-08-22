@@ -1,42 +1,152 @@
 .App {
-  text-align: center;
+    text-align: center;
 }
 
 .App-logo {
-  height: 40vmin;
-  pointer-events: none;
+    height: 40vmin;
+    pointer-events: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+    .App-logo {
+        animation: App-logo-spin infinite 20s linear;
+    }
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+    background-color: #282c34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
 }
 
 .App-link {
-  color: #61dafb;
+    color: #61dafb;
+}
+/* ============== LOGO ON SIDE BAR ================  */
+#main-pro-layout .pindias-logo-text {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #8d0f71;
+    margin-bottom: 0;
+}
+
+.ant-menu .anticon {
+    font-size: large;
+}
+
+.ant-menu .ant-pro-menu-item-title {
+    font-size: 15px;
+    font-weight: 400;
+    /* color: rgba(0, 0, 0, 0.65); */
+}
+
+/* ==================== HEADER ==================== */
+.ant-pro-global-header.ant-pro-global-header-layout-side .pindias-logo-img {
+    width: 30px;
+}
+.ant-pro-global-header.ant-pro-global-header-layout-side .pindias-logo-text {
+    display: none;
+}
+.multi-language {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0px 10px;
+}
+
+.avatarIcon {
+    /* width: 40px;
+    height: 40px;
+    padding: 5px !important; */
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid #701e87;
+}
+
+#header-menu-dropdown {
+    max-width: 400px !important;
+    width: 350px !important;
+    min-height: 300px !important;
+    margin-top: 22px !important;
+    border-radius: 10px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+}
+
+#header-menu-dropdown .ant-dropdown-menu-item:hover {
+    background-color: transparent;
+    cursor: unset;
+}
+
+#header-menu-dropdown .account-manager {
+    color: #3c4043;
+    border: 1px solid #dadce0;
+    height: auto;
+    display: inline-block;
+    text-overflow: ellipsis;
+    white-space: normal;
+    border-radius: 100px;
+    box-sizing: border-box;
+    margin: 20px 0;
+    max-width: 90%;
+    outline: 0;
+    /* padding: 10px 15px; */
+}
+
+#header-menu-dropdown .account-manager span {
+    display: flex;
+    align-items: center !important;
+    padding: 10px 5px;
+}
+
+#header-menu-dropdown .account-manager:hover {
+    background-color: #eef0f1f8;
+    border: 1px solid #dadce0;
+}
+
+#header-menu-dropdown .account-manager:focus {
+    border: 1px solid #dadce0;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+}
+
+#header-menu-dropdown .btn-logout {
+    color: #3c4043;
+    border: 1px solid #dadce0;
+    border-radius: 10px;
+    box-sizing: border-box;
+    width: 80%;
+    max-width: 100%;
+    outline: 0;
+    padding: 20px 15px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#header-menu-dropdown .btn-logout:hover {
+    background-color: #eef0f1f8;
+    border: 1px solid #dadce0;
+}
+
+#header-menu-dropdown .btn-logout:focus {
+    border: 1px solid #dadce0;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 button {
-  font-size: calc(10px + 2vmin);
+    font-size: calc(10px + 2vmin);
 }
