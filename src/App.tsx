@@ -19,10 +19,12 @@ import { usePageVisibility } from './Hooks/TabChangeHelper'
 import { tokenExpiredHandler } from './Hooks/fetchHandler'
 import Cookies from 'universal-cookie'
 import HeaderComponent from './components/Layout/HeaderComponent'
+import RejectedList from './components/RealEstateManagement/RejectedList'
 
 function App() {
     const { params } = useParams()
-    const [settings, setSetting] = useState<Partial<ProSettings> | undefined>()
+    // const [settings, setSetting] = useState<Partial<ProSettings> | undefined>()
+    const [settings, setSetting] = useState<Partial<ProSettings> | undefined>({ fixSiderbar: true })
     const [pathname, setPathname] = useState('/welcome')
     const cookies = new Cookies()
     // const { t } = useTranslation();
@@ -139,39 +141,10 @@ function App() {
                                     <h1 className="pindias-logo-text">Pindias</h1>
                                 </Link>
                             )}
-                            menuFooterRender={props => {
-                                return (
-                                    <a
-                                        style={{
-                                            lineHeight: '48rpx',
-                                            display: 'flex',
-                                            height: 48,
-                                            color: 'rgba(255, 255, 255, 0.65)',
-                                            alignItems: 'center',
-                                        }}
-                                        href="https://pindias.com/"
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
-                                        <img
-                                            alt="pro-logo"
-                                            src="https://res.cloudinary.com/metawayholdings-logo/image/upload/v1657336244/Metaway%20Holdings%20Image/Logo_Meta_512px_gpfe6y.png"
-                                            style={{
-                                                width: 16,
-                                                height: 16,
-                                                margin: '0 16px',
-                                                marginRight: 10,
-                                            }}
-                                        />
-                                        {!props?.collapsed && 'Preview Pro'}
-                                    </a>
-                                )
-                            }}
                             onMenuHeaderClick={e => console.log('tét', e)}
                             rightContentRender={() => (
                                 <div>
                                     <HeaderComponent />
-                                    {/* <Avatar shape="square" size="small" icon={<UserOutlined />} /> */}
                                 </div>
                             )}
                         >
@@ -181,15 +154,18 @@ function App() {
                                         height: '100vh',
                                     }}
                                 >
+                                    {/* ============= real estate ============= */}
+
                                     <Routes>
                                         <Route path="/" element={<RealEstateAllList />} />
-                                        {/* ============= real estate ============= */}
                                         <Route
                                             path="/real-estate/all"
                                             element={<RealEstateAllList />}
                                         />
+                                        <Route path="/real-estate/rejected" element={<RejectedList />} />
                                         <Route path="*" element={<NotFound />} />
-
+                                        <Route path="*" element={<NotFound />} />
+                                        <Route path="*" element={<NotFound />} />
                                     </Routes>
                                 </div>
                             </PageContainer>

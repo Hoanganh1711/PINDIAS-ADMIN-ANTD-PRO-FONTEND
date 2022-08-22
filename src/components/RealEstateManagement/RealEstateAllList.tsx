@@ -299,6 +299,7 @@ function AllRealEstates() {
             hideInSearch: true,
             hideInForm: true,
             editable: false,
+            responsive: ['lg'],
             width: '5%',
         },
         {
@@ -380,6 +381,7 @@ function AllRealEstates() {
         {
             title: 'Location',
             dataIndex: 'location',
+            responsive: ['lg'],
             // ellipsis: true,
             // tip: 'If the title is too long, it will automatically shrink',
             // formItemProps: {
@@ -403,6 +405,7 @@ function AllRealEstates() {
             filters: true,
             onFilter: true,
             ellipsis: true,
+            responsive: ['lg'],
             width: '10%',
             // responsive: ["lg"],
             // valueType: 'string',
@@ -427,6 +430,7 @@ function AllRealEstates() {
             title: 'End Date',
             key: 'endDate',
             dataIndex: 'endDate',
+            responsive: ['lg'],
             width: '10%',
             // valueType: 'select',
             // valueEnum: {
@@ -454,8 +458,6 @@ function AllRealEstates() {
             valueType: 'string',
             width: '10%',
             render: (status: string, record: any) => {
-                console.log('item', record.status);
-                
                 return (
                     <div id="real-estate-status" key={record.id}>
                         {record.status === 'APPROVED' ? (
@@ -489,14 +491,15 @@ function AllRealEstates() {
             title: 'Operate',
             valueType: 'option',
             key: 'option',
+            responsive: ['lg'],
             render: (text: any, record: any, _: any, action: any) => [
                 <a
                     key="editable"
-                    onClick={() => {
-                        action?.startEditable?.(record.id)
-                    }}
+                    // onClick={() => {
+                    //     action?.startEditable?.(record.id)
+                    // }}
                 >
-                    Edit
+                    Details
                 </a>,
 
                 <TableDropdown
@@ -520,7 +523,7 @@ function AllRealEstates() {
         selectedRowKeys,
         onChange: onSelectChange,
         selections: [
-            // Table.SELECTION_ALL,
+            Table.SELECTION_ALL,
             Table.SELECTION_NONE,
             // {
             //     key: "odd",
@@ -554,37 +557,6 @@ function AllRealEstates() {
     }
 
     const hasSelected = selectedRowKeys.length > 0
-
-    const start = () => {
-        setLoading(true)
-        setTimeout(() => {
-            setSelectedRowKeys([])
-            setLoading(false)
-        }, 1000)
-    }
-
-    const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
-        const { current, pageSize } = pagination
-
-        setCurrentPage(current)
-        setPageSize(pageSize)
-        const { id, name, startDate, endDate, location, purpose, status }: any = filters
-
-        const filter = {
-            id: id && id.length > 0 ? id[0] : '',
-            name: name && name.length > 0 ? name[0] : '',
-            // startDate: startDate && startDate.length > 0 ? startDate[0] : "",
-            // endDate: endDate && endDate.length > 0 ? endDate[0] : "",
-            location: location && location.length > 0 ? location[0] : '',
-            purpose: purpose && purpose.length > 0 ? purpose : '',
-            status: status && status.length > 0 ? status : '',
-            startFrom: startDate ? moment(startDate[0][0]._d).format('YYYY-MM-DD') : '',
-            startTo: startDate ? moment(startDate[0][1]._d).format('YYYY-MM-DD') : '',
-            endFrom: endDate ? moment(startDate[0][0]._d).format('YYYY-MM-DD') : '',
-            endTo: endDate ? moment(startDate[0][1]._d).format('YYYY-MM-DD') : '',
-        }
-        settableFilters(filter)
-    }
 
     const showPromiseConfirm = (actionType: string) => {
         confirm({
@@ -676,16 +648,30 @@ function AllRealEstates() {
                 dataSource={tableData}
                 columns={columns}
                 actionRef={actionRef}
-                rowSelection={rowSelection}
+                // rowSelection={rowSelection}
                 // onChange={handleTableChange}
                 cardBordered
-                editable={{
-                    type: 'multiple',
-                    // editableKeys,
-                    onSave: async (rowKey, data, row) => {
-                        console.log({ rowKey, data, row })
-                    },
-                    // onChange: setEditableRowKeys,
+                rowSelection={{
+                    selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+                    // defaultSelectedRowKeys: [1],
+                }}
+                tableAlertRender={({ selectedRowKeys, selectedRows, onCleanSelected }) =>
+                    <Space size={24}>
+                        <span>
+                            Selected {selectedRowKeys.length} items
+                            <a style={{ marginLeft: 8 }} onClick={onCleanSelected}>
+                                Cancel
+                            </a>
+                        </span>
+                    </Space>
+                }
+                tableAlertOptionRender={() => {
+                    return (
+                        <Space size={16}>
+                            <a>批量删除</a>
+                            <a>导出数据</a>
+                        </Space>
+                    )
                 }}
                 columnsState={{
                     persistenceKey: 'pro-table-singe-demos',
