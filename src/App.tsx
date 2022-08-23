@@ -7,7 +7,7 @@ import logo from './public/img/logo-pindias-small.png'
 import { UserOutlined } from '@ant-design/icons'
 import type { ProSettings } from '@ant-design/pro-components'
 import { PageContainer, ProLayout, SettingDrawer } from '@ant-design/pro-components'
-import { Avatar, Descriptions, message } from 'antd'
+import { Avatar, Breadcrumb, Descriptions, message } from 'antd'
 import { useState } from 'react'
 import defaultProps from './config/Routes/_defaultProps'
 import Home from './pages/Home'
@@ -20,6 +20,9 @@ import { tokenExpiredHandler } from './Hooks/fetchHandler'
 import Cookies from 'universal-cookie'
 import HeaderComponent from './components/Layout/HeaderComponent'
 import RejectedList from './components/RealEstateManagement/RejectedList'
+import FooterComponent from './components/Layout/FooterComponent'
+import DraftList from './components/RealEstateManagement/DraftList'
+import Test from './components/RealEstateManagement/Test'
 
 function App() {
     const { params } = useParams()
@@ -108,6 +111,8 @@ function App() {
                             menuItemRender={(item, dom) => (
                                 <span
                                     onClick={() => {
+                                        console.log('item.path', item.path)
+
                                         setPathname(item.path ? item.path : '/welcome')
                                     }}
                                 >
@@ -149,25 +154,32 @@ function App() {
                             )}
                         >
                             <PageContainer>
-                                <div
-                                    style={{
-                                        height: '100vh',
-                                    }}
-                                >
-                                    {/* ============= real estate ============= */}
-
-                                    <Routes>
-                                        <Route path="/" element={<RealEstateAllList />} />
-                                        <Route
-                                            path="/real-estate/all"
-                                            element={<RealEstateAllList />}
-                                        />
-                                        <Route path="/real-estate/rejected" element={<RejectedList />} />
-                                        <Route path="*" element={<NotFound />} />
-                                        <Route path="*" element={<NotFound />} />
-                                        <Route path="*" element={<NotFound />} />
-                                    </Routes>
-                                </div>
+                                <Routes>
+                                    <Route path="/" element={<RealEstateAllList />} />
+                                    <Route
+                                        path="/real-estate/all"
+                                        element={<RealEstateAllList />}
+                                    />
+                                    <Route
+                                        path="/real-estate/rejected"
+                                        element={<RejectedList />}
+                                    />
+                                    {/* <Route path="/real-estate/create" element={<CreateNew />} /> */}
+                                    {/* <Route
+                                            path="/real-estate/demo-view/:id"
+                                            element={<RealEstateDetails />}
+                                        /> */}
+                                    {/* <Route
+                                            path="/real-estate/edit/:id"
+                                            element={<EditRealEstateInfo />}
+                                        /> */}
+                                    <Route path="/real-estate/drafts" element={<DraftList />} />
+                                    <Route path="/test" element={<Test />} />
+                                    <Route path="*" element={<NotFound />} />
+                                    <Route path="*" element={<NotFound />} />
+                                    <Route path="*" element={<NotFound />} />
+                                </Routes>
+                                <FooterComponent />
                             </PageContainer>
                         </ProLayout>
                     </div>

@@ -11,22 +11,17 @@ import {
     Modal,
     Tooltip,
     Form,
-    Dropdown,
-    Descriptions,
-    Row,
-    Col,
 } from 'antd'
+import type { ColumnType } from 'antd/es/table'
 import type { TableRowSelection } from 'antd/es/table/interface'
 import React, { useEffect, useRef, useState } from 'react'
 import moment from 'moment'
 
 import {
+    SearchOutlined,
+    CalendarOutlined,
     EyeOutlined,
     ExclamationCircleOutlined,
-    PlusOutlined,
-    EllipsisOutlined,
-    DownOutlined,
-    UpOutlined,
 } from '@ant-design/icons'
 import ImgError from '../../public/img/img-error.png'
 import { Link, useParams } from 'react-router-dom'
@@ -34,13 +29,14 @@ import { Link, useParams } from 'react-router-dom'
 import type { FilterConfirmProps } from 'antd/es/table/interface'
 import {
     fetchChangeRealEstateStatus,
+    fetchGetRealEstatesByStatus,
     getAllNewsRealEstateSearchFilter,
 } from '../../service/real-estate-all'
-// import { updateRealEstateStatus } from "../../../service/config";
 import { useTranslation } from 'react-i18next'
 import { fetchGetAllProjects } from '../../service/projects'
 import { ActionType, ProColumns, ProTable, TableDropdown } from '@ant-design/pro-components'
-import { PurposeStatusMenu, RealEstateStatusMenu } from '../../Hooks/valueEnumSelect'
+
+// samplr data for table
 
 const { RangePicker } = DatePicker
 const { confirm } = Modal
@@ -58,13 +54,7 @@ type DataType = {
     status: string
 }
 
-// export type TableListItem = {
-//     key: number
-//     status: string | number
-//     purpose: string | number
-// }
-
-function AllRealEstates() {
+function DraftList() {
     const actionRef = useRef<ActionType>()
     const { t } = useTranslation()
     const { params } = useParams()
@@ -77,7 +67,7 @@ function AllRealEstates() {
     const [dropdownLoading, setDropdownLoading] = useState(false)
     const [keyStoreArray, setKeyStoreArray] = useState<any>([])
     const [actionVisible, setActionVisible] = useState(false)
-    // const [actionType, setActionType] = useState("");
+    const [actionType, setActionType] = useState("");
     const [actionMessage, setActionMessage] = useState('')
     const [searchFilter, setSearchFilter] = useState(false)
 
@@ -95,7 +85,7 @@ function AllRealEstates() {
     const [tableFilters, settableFilters] = useState({})
 
     useEffect(() => {
-        getAllRealEstate()
+        getRealEstatesByStatus()
     }, [tableFilters, currentPage, pageSize])
 
     useEffect(() => {
@@ -123,7 +113,7 @@ function AllRealEstates() {
         }
     }, [realEstateData])
 
-    const getAllRealEstate = async () => {
+    const getRealEstatesByStatus = async () => {
         // alert(2);
         setLoading(true)
         const searchItems = {
@@ -132,11 +122,7 @@ function AllRealEstates() {
             size: pageSize,
             projectId: params === undefined ? '' : params,
         }
-        const response = await getAllNewsRealEstateSearchFilter(
-            searchItems,
-            setLoading,
-            searchFilter,
-        )
+        const response = await fetchGetRealEstatesByStatus(searchItems, "DRAFT", setLoading)
         if (response) {
             if (response.status === 200) {
                 const newData: any = []
@@ -182,37 +168,115 @@ function AllRealEstates() {
         setSearchFilter(true)
     }
 
-    const handleReset = (clearFilters: (param?: any) => void) => {
-        clearFilters()
-        setSearchFilter(false)
-        setSearchText('')
-        setSearchedColumn('')
-    }
+    const getColumnSearchProps = (dataIndex: any): ColumnType<DataType> => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
+            <div id="list-all-data-table" style={{ padding: 8 }}>
+                {dataIndex === 'startDate' || dataIndex === 'endDate' ? (
+                    <DatePicker.RangePicker
+                        onChange={(e: any) => {
+                            setSelectedKeys(e.length ? [e] : [])
+                        }}
+                        placeholder={['Start', 'End']}
+                        value={selectedKeys[0]}
+                        format="YYYY-MM-DD"
+                        style={{ marginBottom: 8 }}
+                    />
+                ) : (
+                    <Input
+                        ref={searchInput}
+                        placeholder={`Search ${
+                            dataIndex === 'name'
+                                ? 'name'
+                                : dataIndex === 'location'
+                                ? 'location'
+                                : dataIndex === 'investorName'
+                                ? 'investor name'
+                                : ''
+                        }`}
+                        value={selectedKeys[0]}
+                        onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                        onPressEnter={() =>
+                            handleSearch(selectedKeys as string[], confirm, dataIndex)
+                        }
+                        style={{ marginBottom: 8, display: 'block' }}
+                    />
+                )}
 
-    const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchText(e.target.value)
-    }
+                <div className="d-flex justify-content-between">
+                    <Button
+                        className="table-btn-search"
+                        type="primary"
+                        onClick={() => {
+                            handleSearch(selectedKeys as string[], confirm, dataIndex)
+                            setLoading(true)
+                            setTimeout(() => {
+                                setLoading(false)
+                            }, 1000)
+                        }}
+                        icon={<SearchOutlined />}
+                        size="small"
+                        style={{ width: '48%' }}
+                    >
+                        Search
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            clearFilters()
+                            confirm()
+                            setLoading(true)
+                            setTimeout(() => {
+                                setLoading(false)
+                            }, 1000)
+                            setSearchText('')
+                            setSearchFilter(false)
+                        }}
+                        size="small"
+                        style={{ width: '48%' }}
+                    >
+                        Reset
+                    </Button>
+                </div>
+            </div>
+        ),
+        filterIcon: (filtered: boolean) =>
+            dataIndex === 'startDate' || dataIndex === 'endDate' ? (
+                <CalendarOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
+            ) : (
+                <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
+            ),
+        onFilter: (value: any, record: any) =>
+            dataIndex === 'startDate' || dataIndex === 'endDate'
+                ? record[dataIndex]
+                : record[dataIndex]
+                      .toString()
+                      .toLowerCase()
+                      .includes((value as string).toLowerCase()),
+        onFilterDropdownVisibleChange: visible => {
+            if (visible) {
+                setTimeout(() => searchInput.current?.select(), 100)
+            }
+        },
+    })
 
     const columns: any = [
         {
             title: 'ID',
             dataIndex: 'id',
+            hideInSearch: true,
+            hideInForm: true,
             editable: false,
             responsive: ['lg'],
             width: '5%',
-            search: true,
-            searchArgs: ['id'],
         },
         {
             title: 'Thumbnail',
             dataIndex: 'thumbnail',
-            // responsive: ['lg'],
+            responsive: ['lg'],
             valueType: 'image',
             width: '8%',
             render: (text: string, record: any) => (
                 <img src={record.thumbnail} alt="thumbnail" style={{ width: 80, height: 60 }} />
             ),
-            search: false,
         },
         {
             title: 'Name',
@@ -230,17 +294,21 @@ function AllRealEstates() {
             width: '15%',
             render(name: any, record: any) {
                 return (
-                    <Link to={'#'}>
-                        <span style={{ color: 'blue' }} className="real-estate-name">
-                            {name}
-                        </span>
-                    </Link>
+                    <Tooltip placement="topLeft" title={record.name}>
+                        <Link to={'#'}>
+                            <span style={{ color: 'blue' }} className="real-estate-name">
+                                {name}
+                            </span>
+                            {/* <h5 style={{ color: 'blue' }} className="text-truncate">
+                                {record.name}
+                            </h5> */}
+                        </Link>
+                    </Tooltip>
                 )
             },
         },
         {
             title: t('view-on-page'),
-            search: false,
             render: (_: any, row: any) => {
                 return (
                     <span>
@@ -275,11 +343,26 @@ function AllRealEstates() {
             width: '8%',
         },
         {
+            title: 'purpose',
+            key: 'purpose',
+            dataIndex: 'purpose',
+            valueType: 'string',
+            width: '5%',
+        },
+        {
             title: 'Location',
             dataIndex: 'location',
-            // responsive: ['lg'],
+            responsive: ['lg'],
             // ellipsis: true,
             // tip: 'If the title is too long, it will automatically shrink',
+            // formItemProps: {
+            //     rules: [
+            //         {
+            //             required: true,
+            //             message: 'Title is required!',
+            //         },
+            //     ],
+            // },
             render(name: any, record: any) {
                 return (
                     <h5>{`${record.location}, ${record.ward[0].nameWithType}, ${record.district[0].nameWithType}, ${record.province[0].nameWithType}`}</h5>
@@ -290,11 +373,10 @@ function AllRealEstates() {
         {
             title: 'Start Date',
             dataIndex: 'startDate',
-            valueType: 'dateTime',
             filters: true,
             onFilter: true,
             ellipsis: true,
-            // responsive: ['lg'],
+            responsive: ['lg'],
             width: '10%',
             // responsive: ["lg"],
             // valueType: 'string',
@@ -319,8 +401,7 @@ function AllRealEstates() {
             title: 'End Date',
             key: 'endDate',
             dataIndex: 'endDate',
-            valueType: 'dateTime',
-            // responsive: ['lg'],
+            responsive: ['lg'],
             width: '10%',
             // valueType: 'select',
             // valueEnum: {
@@ -340,38 +421,13 @@ function AllRealEstates() {
             //     },
             // },
         },
-        {
-            title: 'Purpose',
-            key: 'purpose',
-            dataIndex: 'purpose',
-            // initialValue: ['All'],
-            valueType: 'checkbox',
-            valueEnum: PurposeStatusMenu(),
-            width: '8%',
-            render: (purpose: string, record: any) => {
-                return (
-                    <div key={record.id}>
-                        {record.purpose === 'SELL' ? (
-                            <Tag color="blue" style={{ width: '80%' }}>
-                                <span className="text-uppercase status-tag">{record.purpose}</span>
-                            </Tag>
-                        ) : (
-                            <Tag color="purple" style={{ width: '80%' }}>
-                                <span className="text-uppercase status-tag">{record.purpose}</span>
-                            </Tag>
-                        )}
-                    </div>
-                )
-            },
-        },
+
         {
             title: 'Status',
             key: 'status',
             dataIndex: 'status',
-            valueType: 'checkbox',
-            // initialValue: ['all'],
-            valueEnum: RealEstateStatusMenu(),
-            width: '8%',
+            valueType: 'string',
+            width: '10%',
             render: (status: string, record: any) => {
                 return (
                     <div id="real-estate-status" key={record.id}>
@@ -406,11 +462,27 @@ function AllRealEstates() {
             title: 'Operate',
             valueType: 'option',
             key: 'option',
-            // responsive: ['lg'],
+            responsive: ['lg'],
             render: (text: any, record: any, _: any, action: any) => [
-                <a key="editable">View Details</a>,
+                <a
+                    key="editable"
+                    // onClick={() => {
+                    //     action?.startEditable?.(record.id)
+                    // }}
+                >
+                    View Details
+                </a>,
+
+                // <TableDropdown
+                //     key="actionGroup"
+                //     onSelect={() => action?.reload()}
+                //     menus={[
+                //         { key: 'copy', name: 'Copy' },
+                //         { key: 'delete', name: 'Delete' },
+                //     ]}
+                // />,
             ],
-            width: '6%',
+            width: '10%',
         },
     ]
 
@@ -489,7 +561,7 @@ function AllRealEstates() {
                         setSelectedRowKeys([])
                         setActionVisible(false)
                         actionForm.resetFields()
-                        getAllRealEstate()
+                        getRealEstatesByStatus()
                     } else {
                         message.error(
                             response.data === 'Invalid status'
@@ -543,93 +615,82 @@ function AllRealEstates() {
     return (
         <>
             <ProTable<any>
-                actionRef={actionRef}
-                columns={columns}
+                rowKey="id"
                 dataSource={tableData}
-                request={() => {
-                    return Promise.resolve({
-                        data: tableData,
-                        success: true,
-                    })
-                }}
+                columns={columns}
+                actionRef={actionRef}
+                // rowSelection={rowSelection}
+                // onChange={handleTableChange}
+                cardBordered
                 rowSelection={{
                     selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+                    // defaultSelectedRowKeys: [1],
+                }}
+                tableAlertRender={({ selectedRowKeys, selectedRows, onCleanSelected }) => (
+                    <Space size={24}>
+                        <span>
+                            Selected {selectedRowKeys.length} items
+                            <a style={{ marginLeft: 8 }} onClick={onCleanSelected}>
+                                Cancel
+                            </a>
+                        </span>
+                    </Space>
+                )}
+                tableAlertOptionRender={() => {
+                    return (
+                        <Space size={16}>
+                            <a>批量删除</a>
+                            <a>导出数据</a>
+                        </Space>
+                    )
+                }}
+                columnsState={{
+                    persistenceKey: 'pro-table-singe-demos',
+                    persistenceType: 'localStorage',
+                    onChange(value) {
+                        console.log('value: ', value)
+                    },
                 }}
                 search={{
-                    defaultCollapsed: true,
-                    span: 8,
-                    labelWidth: 80,
+                    labelWidth: 'auto',
                 }}
-                beforeSearchSubmit={(params: any) => {
-                    return {
-                        ...params,
-                    }
-                }}
-                toolBarRender={() => [
-                    <Button
-                        type="primary"
-                        onClick={() => {
-                            setActionVisible(true)
-                        }}
-                    >
-                        <PlusOutlined />
-                        <span>Create Real Estate</span>
-                    </Button>,
-                    <Dropdown overlay={menu} placement="bottomRight">
-                        <Button>
-                            <DownOutlined />
-                            <span>Change Status</span>
-                        </Button>
-                    </Dropdown>,
-                ]}
-                pagination={{
-                    showSizeChanger: true,
-                    showQuickJumper: true,
-                    pageSizeOptions: ['10', '20', '50', '100'],
-                    showTotal: (total: number) => `Total ${total} items`,
-                }}
-                rowKey="id"
-                scroll={{ x: 1500 }}
-                // bordered
-                // expandable={{
-                //     expandedRowRender: (record: any) => (
-                //         <div style={{ margin: 0 }}>
-                //             <Descriptions column={2}>
-                //                 <Descriptions.Item label="Address">{'record.address'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Description">{'record.description'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Price">{'record.price'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Status">{'record.status'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Created At">{'record.createdAt'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Updated At">{'record.updatedAt'}</Descriptions.Item>
-                //             </Descriptions>
-                //         </div>
-                //     ),
-                // }}
                 options={{
-                    fullScreen: true,
-                    reload: true,
-                    setting: true,
-                    density: true,
-
+                    setting: {
+                        listsHeight: 400,
+                    },
                 }}
-                optionRender={(props: any) => [
-                    <Button key="3" type="primary" onClick={() => props.search()}>
-                        Search
-                    </Button>,
-                    <Button key="4" onClick={() => props.reload()}>
-                        Reload
-                    </Button>,
-                ]}
-            />
-            <Modal
-                title="Change Status"
-                visible={actionVisible}
-                onOk={() => handleOk('CHANGED')}
-                onCancel={() => handleCancel()}
-                okText="Change"
-                cancelText="Cancel"
+                form={{
+                    // Due to the configuration of transform, the submitted participation is different from the definition, which needs to be transformed here
+                    syncToUrl: (values, type) => {
+                        if (type === 'get') {
+                            return {
+                                ...values,
+                                created_at: [values.startTime, values.endTime],
+                            }
+                        }
+                        return values
+                    },
+                }}
+                pagination={{
+                    pageSize: pageSize,
+                    current: currentPage,
+                    // total: totalNews,
+                    // onChange: page => setcurrentPage(page),
+                }}
+                dateFormatter="string"
+                headerTitle="News List"
+                // toolBarRender={() => [
+                //     <Button key="button" icon={<PlusOutlined />} type="primary">
+                //         New
+                //     </Button>,
+                //     <Dropdown key="menu" overlay={menu}>
+                //         <Button>
+                //             <EllipsisOutlined />
+                //         </Button>
+                //     </Dropdown>,
+                // ]}
             />
         </>
     )
 }
-export default AllRealEstates
+export default DraftList

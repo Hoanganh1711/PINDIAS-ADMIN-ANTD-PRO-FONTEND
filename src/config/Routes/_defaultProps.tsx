@@ -38,6 +38,11 @@ export default {
                 icon: <DeleteOutlined />,
             },
             {
+                path: '/test',
+                name: 'TEST',
+                icon: <DeleteOutlined />,
+            },
+            {
                 path: '/about',
                 name: 'About',
                 icon: <FileProtectOutlined />,

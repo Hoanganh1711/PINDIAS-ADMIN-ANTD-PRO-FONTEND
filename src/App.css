@@ -1,38 +1,13 @@
-.App {
-    text-align: center;
-}
-
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: #282c34;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
-}
-
-.App-link {
-    color: #61dafb;
-}
 /* ============== LOGO ON SIDE BAR ================  */
 #main-pro-layout .pindias-logo-text {
     font-size: 2rem;
     font-weight: bold;
     color: #8d0f71;
     margin-bottom: 0;
+}
+
+.ant-pro-sider-light .ant-pro-sider-logo h1 {
+    color: #8d0f71 !important;
 }
 
 .ant-menu .anticon {
@@ -42,7 +17,6 @@
 .ant-menu .ant-pro-menu-item-title {
     font-size: 15px;
     font-weight: 400;
-    /* color: rgba(0, 0, 0, 0.65); */
 }
 
 /* ==================== HEADER ==================== */
@@ -58,11 +32,11 @@
     justify-content: flex-end;
     padding: 0px 10px;
 }
+.global-translate-icon {
+    color: #8422ad;
+}
 
 .avatarIcon {
-    /* width: 40px;
-    height: 40px;
-    padding: 5px !important; */
     border-radius: 50%;
     background-color: #fff;
     border: 2px solid #701e87;
@@ -94,7 +68,6 @@
     margin: 20px 0;
     max-width: 90%;
     outline: 0;
-    /* padding: 10px 15px; */
 }
 
 #header-menu-dropdown .account-manager span {
@@ -136,6 +109,46 @@
 #header-menu-dropdown .btn-logout:focus {
     border: 1px solid #dadce0;
     box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+}
+
+/* ==================== REAL ESTATE ================ */
+.real-estate-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0;
+    text-transform: capitalize;
+}
+
+.real-estate-name span {
+    color: #1890ff;
+}
+
+#real-estate-status .ant-tag.ant-tag-has-color, #real-estate-status .ant-tag.ant-tag-, #real-estate-status .ant-tag-blue {
+    /* width: 100px !important; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#real-estate-status .status-tag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+/* ==================== FOOTER ==================== */
+#footer-page {
+    display: flex;
+    justify-content: center;
+    padding: 5px 50px;
+    color: rgba(0, 0, 0, 0.85);
+    font-size: 14px;
+    background: #f0f2f5;
+}
+
+#footer-page .footer-content {
+    text-align: center;
 }
 
 @keyframes App-logo-spin {
