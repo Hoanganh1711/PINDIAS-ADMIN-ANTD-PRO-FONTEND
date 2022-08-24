@@ -29,7 +29,7 @@ import avatar from '../../public/img/purple-user-avatar.png'
 const { Content, Header } = Layout
 
 function HeaderComponent() {
-    // const { t } = useTranslation()
+    const { t } = useTranslation()
     // const dispatch = useDispatch()
     const cookies = new Cookies()
     const [userName, setuserName] = useState('Name not updated')
@@ -42,8 +42,8 @@ function HeaderComponent() {
     }, [])
 
     const lngs: any = {
-        vi: { nativeName: t('vietnamese'), flag: vietnamFlag },
-        en: { nativeName: t('english'), flag: englishFlag },
+        vi: { nativeName: 'Vietnamese', flag: vietnamFlag },
+        en: { nativeName: 'English', flag: englishFlag },
     }
 
     const getUserInformation = async () => {

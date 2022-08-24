@@ -25,15 +25,12 @@ import DraftList from './components/RealEstateManagement/DraftList'
 import Test from './components/RealEstateManagement/Test'
 
 function App() {
-    const { params } = useParams()
-    // const [settings, setSetting] = useState<Partial<ProSettings> | undefined>()
-    const [settings, setSetting] = useState<Partial<ProSettings> | undefined>({ fixSiderbar: true })
-    const [pathname, setPathname] = useState('/welcome')
+    const [pathname, setPathname] = useState('/real-estate/all')
     const cookies = new Cookies()
     // const { t } = useTranslation();
     const [isLogin, setIsLogin] = useState(false)
     // const isAdmin = useSelector(isAdminSelector);
-    const [actions, setactions] = useState()
+    const [actions, setActions] = useState()
     const isBrowserTabChanged = usePageVisibility()
 
     useEffect(() => {

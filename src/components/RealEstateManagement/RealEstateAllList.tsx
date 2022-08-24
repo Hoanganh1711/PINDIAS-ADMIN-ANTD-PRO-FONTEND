@@ -15,6 +15,9 @@ import {
     Descriptions,
     Row,
     Col,
+    Select,
+    InputNumber,
+    TableProps,
 } from 'antd'
 import type { TableRowSelection } from 'antd/es/table/interface'
 import React, { useEffect, useRef, useState } from 'react'
@@ -24,9 +27,10 @@ import {
     EyeOutlined,
     ExclamationCircleOutlined,
     PlusOutlined,
-    EllipsisOutlined,
+    SearchOutlined,
     DownOutlined,
     UpOutlined,
+    EllipsisOutlined,
 } from '@ant-design/icons'
 import ImgError from '../../public/img/img-error.png'
 import { Link, useParams } from 'react-router-dom'
@@ -39,12 +43,12 @@ import {
 // import { updateRealEstateStatus } from "../../../service/config";
 import { useTranslation } from 'react-i18next'
 import { fetchGetAllProjects } from '../../service/projects'
-import { ActionType, ProColumns, ProTable, TableDropdown } from '@ant-design/pro-components'
+import { ActionType, ProColumns, ProTable, Search, TableDropdown } from '@ant-design/pro-components'
 import { PurposeStatusMenu, RealEstateStatusMenu } from '../../Hooks/valueEnumSelect'
 
 const { RangePicker } = DatePicker
 const { confirm } = Modal
-const { TextArea } = Input
+const { Option } = Select
 
 type DataType = {
     key: React.Key
@@ -58,24 +62,17 @@ type DataType = {
     status: string
 }
 
-// export type TableListItem = {
-//     key: number
-//     status: string | number
-//     purpose: string | number
-// }
-
 function AllRealEstates() {
     const actionRef = useRef<ActionType>()
     const { t } = useTranslation()
     const { params } = useParams()
-    const [actionForm] = Form.useForm()
+    const [form] = Form.useForm()
     const [loading, setLoading] = useState(false)
     const [projectData, setProjectData] = useState<any>([])
     const [realEstateData, setRealEstateData] = useState<any>([])
     const [tableData, setTableData] = useState([])
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
     const [dropdownLoading, setDropdownLoading] = useState(false)
-    const [keyStoreArray, setKeyStoreArray] = useState<any>([])
     const [actionVisible, setActionVisible] = useState(false)
     // const [actionType, setActionType] = useState("");
     const [actionMessage, setActionMessage] = useState('')
@@ -93,6 +90,15 @@ function AllRealEstates() {
 
     // For filtering
     const [tableFilters, settableFilters] = useState({})
+
+    const defaultColConfig = {
+        xs: 24,
+        sm: 24,
+        md: 12,
+        lg: 12,
+        xl: 8,
+        xxl: 6,
+    }
 
     useEffect(() => {
         getAllRealEstate()
@@ -130,8 +136,9 @@ function AllRealEstates() {
             ...tableFilters,
             page: currentPage - 1,
             size: pageSize,
-            projectId: params === undefined ? '' : params,
         }
+        console.log('searchItems', searchItems)
+
         const response = await getAllNewsRealEstateSearchFilter(
             searchItems,
             setLoading,
@@ -157,7 +164,6 @@ function AllRealEstates() {
                         status: element.status,
                     })
                 })
-
                 setRealEstateData(newData)
                 setTotalElement(response.data.totalElements)
                 setLoading(true)
@@ -179,7 +185,7 @@ function AllRealEstates() {
         confirm()
         setSearchText(selectedKeys[0])
         setSearchedColumn(dataIndex)
-        setSearchFilter(true)
+        // setSearchFilter([])
     }
 
     const handleReset = (clearFilters: (param?: any) => void) => {
@@ -189,24 +195,18 @@ function AllRealEstates() {
         setSearchedColumn('')
     }
 
-    const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchText(e.target.value)
-    }
-
     const columns: any = [
         {
             title: 'ID',
             dataIndex: 'id',
-            editable: false,
+            // search: true,
             responsive: ['lg'],
             width: '5%',
-            search: true,
-            searchArgs: ['id'],
         },
         {
             title: 'Thumbnail',
             dataIndex: 'thumbnail',
-            // responsive: ['lg'],
+            responsive: ['lg'],
             valueType: 'image',
             width: '8%',
             render: (text: string, record: any) => (
@@ -239,7 +239,7 @@ function AllRealEstates() {
             },
         },
         {
-            title: t('view-on-page'),
+            title: 'View on page',
             search: false,
             render: (_: any, row: any) => {
                 return (
@@ -277,7 +277,7 @@ function AllRealEstates() {
         {
             title: 'Location',
             dataIndex: 'location',
-            // responsive: ['lg'],
+            responsive: ['lg'],
             // ellipsis: true,
             // tip: 'If the title is too long, it will automatically shrink',
             render(name: any, record: any) {
@@ -290,73 +290,51 @@ function AllRealEstates() {
         {
             title: 'Start Date',
             dataIndex: 'startDate',
-            valueType: 'dateTime',
+            valueType: 'dateRange',
             filters: true,
             onFilter: true,
             ellipsis: true,
-            // responsive: ['lg'],
+            responsive: ['lg'],
             width: '10%',
-            // responsive: ["lg"],
-            // valueType: 'string',
-            // valueEnum: {
-            //     all: { text: 'Super long'.repeat(50) },
-            //     open: {
-            //         text: 'Unsolved',
-            //         status: 'Error',
-            //     },
-            //     closed: {
-            //         text: 'Solved',
-            //         status: 'Success',
-            //         disabled: true,
-            //     },
-            //     processing: {
-            //         text: 'Processing',
-            //         status: 'Processing',
-            //     },
-            // },
+            render(startDate: any, record: any) {
+                return (
+                    <div>
+                        <span>{record.startDate}</span>
+                    </div>
+                )
+            },
         },
         {
             title: 'End Date',
             key: 'endDate',
             dataIndex: 'endDate',
-            valueType: 'dateTime',
-            // responsive: ['lg'],
+            valueType: 'dateRange',
+            responsive: ['lg'],
             width: '10%',
-            // valueType: 'select',
-            // valueEnum: {
-            //     all: { text: 'Super long'.repeat(50) },
-            //     open: {
-            //         text: 'Unsolved',
-            //         status: 'Error',
-            //     },
-            //     closed: {
-            //         text: 'Solved',
-            //         status: 'Success',
-            //         disabled: true,
-            //     },
-            //     processing: {
-            //         text: 'Processing',
-            //         status: 'Processing',
-            //     },
-            // },
+            render(endDate: any, record: any) {
+                return (
+                    <div>
+                        <span>{record.endDate}</span>
+                    </div>
+                )
+            },
         },
         {
             title: 'Purpose',
             key: 'purpose',
             dataIndex: 'purpose',
-            // initialValue: ['All'],
             valueType: 'checkbox',
             valueEnum: PurposeStatusMenu(),
-            width: '8%',
+            width: '10%',
             render: (purpose: string, record: any) => {
                 return (
                     <div key={record.id}>
                         {record.purpose === 'SELL' ? (
-                            <Tag color="blue" style={{ width: '80%' }}>
+                            <Tag color="blue" style={{ width: '80%', textAlign: 'center' }}>
                                 <span className="text-uppercase status-tag">{record.purpose}</span>
                             </Tag>
                         ) : (
-                            <Tag color="purple" style={{ width: '80%' }}>
+                            <Tag color="purple" style={{ width: '80%', textAlign: 'center' }}>
                                 <span className="text-uppercase status-tag">{record.purpose}</span>
                             </Tag>
                         )}
@@ -369,9 +347,8 @@ function AllRealEstates() {
             key: 'status',
             dataIndex: 'status',
             valueType: 'checkbox',
-            // initialValue: ['all'],
             valueEnum: RealEstateStatusMenu(),
-            width: '8%',
+            width: '10%',
             render: (status: string, record: any) => {
                 return (
                     <div id="real-estate-status" key={record.id}>
@@ -406,56 +383,13 @@ function AllRealEstates() {
             title: 'Operate',
             valueType: 'option',
             key: 'option',
-            // responsive: ['lg'],
+            responsive: ['lg', 'md'],
             render: (text: any, record: any, _: any, action: any) => [
                 <a key="editable">View Details</a>,
             ],
             width: '6%',
         },
     ]
-
-    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-        setSelectedRowKeys(newSelectedRowKeys)
-    }
-
-    const rowSelection: TableRowSelection<DataType> = {
-        selectedRowKeys,
-        onChange: onSelectChange,
-        selections: [
-            Table.SELECTION_ALL,
-            Table.SELECTION_NONE,
-            // {
-            //     key: "odd",
-            //     text: "Select Odd Row",
-            //     onSelect: (changableRowKeys) => {
-            //         let newSelectedRowKeys = [];
-            //         newSelectedRowKeys = changableRowKeys.filter((_, index) => {
-            //             if (index % 2 !== 0) {
-            //                 return false;
-            //             }
-            //             return true;
-            //         });
-            //         setSelectedRowKeys(newSelectedRowKeys);
-            //     },
-            // },
-            // {
-            //     key: "even",
-            //     text: "Select Even Row",
-            //     onSelect: (changableRowKeys) => {
-            //         let newSelectedRowKeys = [];
-            //         newSelectedRowKeys = changableRowKeys.filter((_, index) => {
-            //             if (index % 2 !== 0) {
-            //                 return true;
-            //             }
-            //             return false;
-            //         });
-            //         setSelectedRowKeys(newSelectedRowKeys);
-            //     },
-            // },
-        ],
-    }
-
-    const hasSelected = selectedRowKeys.length > 0
 
     const showPromiseConfirm = (actionType: string) => {
         confirm({
@@ -473,8 +407,7 @@ function AllRealEstates() {
     }
 
     const handleOk = (actionType: any) => {
-        actionForm
-            .validateFields()
+        form.validateFields()
             .then(async values => {
                 setDropdownLoading(true)
                 const response = await fetchChangeRealEstateStatus(
@@ -488,7 +421,7 @@ function AllRealEstates() {
                         message.success('Successfully changed status of selected real estate')
                         setSelectedRowKeys([])
                         setActionVisible(false)
-                        actionForm.resetFields()
+                        form.resetFields()
                         getAllRealEstate()
                     } else {
                         message.error(
@@ -514,7 +447,7 @@ function AllRealEstates() {
 
     const handleCancel = () => {
         setActionVisible(false)
-        actionForm.resetFields()
+        form.resetFields()
     }
 
     const menu = (
@@ -540,9 +473,80 @@ function AllRealEstates() {
         />
     )
 
+    const onChange = (searchValues: any) => {
+        const { id, name, startDate, endDate, location, purpose, status }: any = searchValues
+        console.log('searchValues', searchValues)
+
+        const searchParams = {
+            id: id ? id : '',
+            name: name ? name : '',
+            startFrom: startDate ? moment(startDate[0]).format('YYYY-MM-DDT00:00:00') : '',
+            startTo: startDate ? moment(startDate[1]).format('YYYY-MM-DDT23:59:59') : '',
+            endFrom: endDate ? moment(endDate[0]).format('YYYY-MM-DDT00:00:00') : '',
+            endTo: endDate ? moment(endDate[1]).format('YYYY-MM-DDT23:59:59') : '',
+            location: location ? location : '',
+            purpose: purpose && purpose.length > 0 ? purpose : '',
+            status: status && status.length > 0 ? status : '',
+        }
+        console.log('new params', searchParams)
+
+        settableFilters(searchParams)
+        setSearchFilter(true)
+    }
+
     return (
         <>
             <ProTable<any>
+                loading={loading}
+                dataSource={tableData}
+                columns={columns}
+                actionRef={actionRef}
+                beforeSearchSubmit={(params: any) => {
+                    onChange(params)
+                    return {
+                        ...params,
+                    }
+                }}
+                onSubmit={() => getAllRealEstate()}
+                rowKey="id"
+                search={{
+                    defaultCollapsed: false,
+                    span: defaultColConfig,
+                    labelWidth: 80,
+                }}
+                options={{
+                    fullScreen: true,
+                    reload: true,
+                    setting: true,
+                    density: true,
+                }}
+                pagination={{
+                    showSizeChanger: true,
+                    showQuickJumper: true,
+                    pageSizeOptions: ['10', '20', '50', '100'],
+                    showTotal: (total: number) => `Total ${total} items`,
+                }}
+                dateFormatter="string"
+                headerTitle="Real Estate"
+                toolBarRender={() => [
+                    <Button
+                        type="primary"
+                        onClick={() => {
+                            setActionVisible(true)
+                        }}
+                    >
+                        <PlusOutlined />
+                        <span>Create Real Estate</span>
+                    </Button>,
+                    <Dropdown overlay={menu} placement="bottomRight">
+                        <Button>
+                            <DownOutlined />
+                            <span>Change Status</span>
+                        </Button>
+                    </Dropdown>,
+                ]}
+            />
+            {/* <ProTable<any>
                 actionRef={actionRef}
                 columns={columns}
                 dataSource={tableData}
@@ -556,15 +560,21 @@ function AllRealEstates() {
                     selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
                 }}
                 search={{
-                    defaultCollapsed: true,
+                    // defaultCollapsed: true,
                     span: 8,
                     labelWidth: 80,
                 }}
                 beforeSearchSubmit={(params: any) => {
+                    // console.log('params', params)
                     return {
                         ...params,
                     }
                 }}
+                onSubmit={(params: any) => {
+                    console.log('aloha', params)
+                    onSearch()
+                }}
+                
                 toolBarRender={() => [
                     <Button
                         type="primary"
@@ -610,17 +620,21 @@ function AllRealEstates() {
                     reload: true,
                     setting: true,
                     density: true,
-
                 }}
-                optionRender={(props: any) => [
-                    <Button key="3" type="primary" onClick={() => props.search()}>
-                        Search
-                    </Button>,
-                    <Button key="4" onClick={() => props.reload()}>
-                        Reload
-                    </Button>,
-                ]}
-            />
+                form={{
+                    // Get fields value and pass them to search function
+                    syncToUrl: (values, type) => {
+                        // if (type === 'get') {
+                        //     return {
+                        //         ...values,
+                        //         created_at: [values.startTime, values.endTime],
+                        //     }
+                        // }
+                        setSearchFilter(values)
+                        return values
+                    },
+                }}
+            /> */}
             <Modal
                 title="Change Status"
                 visible={actionVisible}

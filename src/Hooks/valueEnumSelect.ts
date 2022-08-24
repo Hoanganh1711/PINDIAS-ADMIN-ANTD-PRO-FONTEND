@@ -4,10 +4,10 @@ const RealEstateStatusMenu = () => {
     const { t } = useTranslation()
     const statusOptions = {
         // all: { text: 'All', status: ['APPROVED', 'PENDING', 'OPENING', 'FINISHED'] },
-        approved: { text: t('approved'), status: 'APPROVED' },
-        pending: { text: t('pending'), status: 'PENDING' },
-        opening: { text: t('opening'), status: 'OPENING' },
-        finished: { text: t('finished'), status: 'FINISHED' },
+        approved: { text: 'APPROVED', status: 'APPROVED' },
+        pending: { text: 'PENDING', status: 'PENDING' },
+        opening: { text: 'OPENING', status: 'OPENING' },
+        finished: { text: 'FINISHED', status: 'FINISHED' },
     }
     return statusOptions
 }
@@ -16,9 +16,8 @@ const PurposeStatusMenu = () => {
     const { t } = useTranslation()
     const purposeOptions = {
         // all: { text: 'All', status: ['SELL', 'RENT'] },
-        sell: { text: t('sell'), status: 'SELL' },
-        rent: { text: t('rent'), status: 'RENT' },
-        
+        sell: { text: 'SELL', status: 'SELL' },
+        rent: { text: 'RENT', status: 'RENT' },
     }
     return purposeOptions
 }
