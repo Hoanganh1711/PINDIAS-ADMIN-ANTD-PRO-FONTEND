@@ -131,6 +131,7 @@
 }
 
 #real-estate-status .status-tag {
+    width: fit-content;
     display: flex;
     align-items: center;
     justify-content: center;

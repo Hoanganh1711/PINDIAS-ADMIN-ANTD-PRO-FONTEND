@@ -177,29 +177,14 @@ function AllRealEstates() {
         return
     }
 
-    const handleSearch = (
-        selectedKeys: string[],
-        confirm: (param?: FilterConfirmProps) => void,
-        dataIndex: any,
-    ) => {
-        confirm()
-        setSearchText(selectedKeys[0])
-        setSearchedColumn(dataIndex)
-        // setSearchFilter([])
-    }
-
-    const handleReset = (clearFilters: (param?: any) => void) => {
-        clearFilters()
-        setSearchFilter(false)
-        setSearchText('')
-        setSearchedColumn('')
+    const handleSelectRows = (rows: any) => {
+        setSelectedRowKeys(rows)
     }
 
     const columns: any = [
         {
             title: 'ID',
             dataIndex: 'id',
-            // search: true,
             responsive: ['lg'],
             width: '5%',
         },
@@ -208,7 +193,7 @@ function AllRealEstates() {
             dataIndex: 'thumbnail',
             responsive: ['lg'],
             valueType: 'image',
-            width: '8%',
+            width: '7%',
             render: (text: string, record: any) => (
                 <img src={record.thumbnail} alt="thumbnail" style={{ width: 80, height: 60 }} />
             ),
@@ -218,7 +203,6 @@ function AllRealEstates() {
             title: 'Name',
             dataIndex: 'name',
             ellipsis: true,
-            // tip: 'If the title is too long, it will automatically shrink',
             formItemProps: {
                 rules: [
                     {
@@ -227,7 +211,7 @@ function AllRealEstates() {
                     },
                 ],
             },
-            width: '15%',
+            // width: '15%',
             render(name: any, record: any) {
                 return (
                     <Link to={'#'}>
@@ -241,6 +225,7 @@ function AllRealEstates() {
         {
             title: 'View on page',
             search: false,
+            tip: 'View on page',
             render: (_: any, row: any) => {
                 return (
                     <span>
@@ -272,17 +257,17 @@ function AllRealEstates() {
                     </span>
                 )
             },
-            width: '8%',
+            width: '10%',
         },
         {
             title: 'Location',
             dataIndex: 'location',
-            responsive: ['lg'],
-            // ellipsis: true,
+            // responsive: ['lg'],
+            ellipsis: true,
             // tip: 'If the title is too long, it will automatically shrink',
             render(name: any, record: any) {
                 return (
-                    <h5>{`${record.location}, ${record.ward[0].nameWithType}, ${record.district[0].nameWithType}, ${record.province[0].nameWithType}`}</h5>
+                    <span>{`${record.location}, ${record.ward[0].nameWithType}, ${record.district[0].nameWithType}, ${record.province[0].nameWithType}`}</span>
                 )
             },
             width: '15%',
@@ -295,7 +280,7 @@ function AllRealEstates() {
             onFilter: true,
             ellipsis: true,
             responsive: ['lg'],
-            width: '10%',
+            // width: '10%',
             render(startDate: any, record: any) {
                 return (
                     <div>
@@ -310,7 +295,7 @@ function AllRealEstates() {
             dataIndex: 'endDate',
             valueType: 'dateRange',
             responsive: ['lg'],
-            width: '10%',
+            // width: '10%',
             render(endDate: any, record: any) {
                 return (
                     <div>
@@ -325,7 +310,7 @@ function AllRealEstates() {
             dataIndex: 'purpose',
             valueType: 'checkbox',
             valueEnum: PurposeStatusMenu(),
-            width: '10%',
+            // width: '10%',
             render: (purpose: string, record: any) => {
                 return (
                     <div key={record.id}>
@@ -348,7 +333,7 @@ function AllRealEstates() {
             dataIndex: 'status',
             valueType: 'checkbox',
             valueEnum: RealEstateStatusMenu(),
-            width: '10%',
+            // width: '10%',
             render: (status: string, record: any) => {
                 return (
                     <div id="real-estate-status" key={record.id}>
@@ -383,11 +368,11 @@ function AllRealEstates() {
             title: 'Operate',
             valueType: 'option',
             key: 'option',
-            responsive: ['lg', 'md'],
+            // responsive: ['lg', 'md'],
             render: (text: any, record: any, _: any, action: any) => [
                 <a key="editable">View Details</a>,
             ],
-            width: '6%',
+            // width: '6%',
         },
     ]
 
@@ -501,6 +486,9 @@ function AllRealEstates() {
                 dataSource={tableData}
                 columns={columns}
                 actionRef={actionRef}
+                rowSelection={{
+                    selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+                }}
                 beforeSearchSubmit={(params: any) => {
                     onChange(params)
                     return {
@@ -510,7 +498,7 @@ function AllRealEstates() {
                 onSubmit={() => getAllRealEstate()}
                 rowKey="id"
                 search={{
-                    defaultCollapsed: false,
+                    defaultCollapsed: true,
                     span: defaultColConfig,
                     labelWidth: 80,
                 }}
@@ -545,96 +533,8 @@ function AllRealEstates() {
                         </Button>
                     </Dropdown>,
                 ]}
+                scroll={{ x: 500 }}
             />
-            {/* <ProTable<any>
-                actionRef={actionRef}
-                columns={columns}
-                dataSource={tableData}
-                request={() => {
-                    return Promise.resolve({
-                        data: tableData,
-                        success: true,
-                    })
-                }}
-                rowSelection={{
-                    selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
-                }}
-                search={{
-                    // defaultCollapsed: true,
-                    span: 8,
-                    labelWidth: 80,
-                }}
-                beforeSearchSubmit={(params: any) => {
-                    // console.log('params', params)
-                    return {
-                        ...params,
-                    }
-                }}
-                onSubmit={(params: any) => {
-                    console.log('aloha', params)
-                    onSearch()
-                }}
-                
-                toolBarRender={() => [
-                    <Button
-                        type="primary"
-                        onClick={() => {
-                            setActionVisible(true)
-                        }}
-                    >
-                        <PlusOutlined />
-                        <span>Create Real Estate</span>
-                    </Button>,
-                    <Dropdown overlay={menu} placement="bottomRight">
-                        <Button>
-                            <DownOutlined />
-                            <span>Change Status</span>
-                        </Button>
-                    </Dropdown>,
-                ]}
-                pagination={{
-                    showSizeChanger: true,
-                    showQuickJumper: true,
-                    pageSizeOptions: ['10', '20', '50', '100'],
-                    showTotal: (total: number) => `Total ${total} items`,
-                }}
-                rowKey="id"
-                scroll={{ x: 1500 }}
-                // bordered
-                // expandable={{
-                //     expandedRowRender: (record: any) => (
-                //         <div style={{ margin: 0 }}>
-                //             <Descriptions column={2}>
-                //                 <Descriptions.Item label="Address">{'record.address'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Description">{'record.description'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Price">{'record.price'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Status">{'record.status'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Created At">{'record.createdAt'}</Descriptions.Item>
-                //                 <Descriptions.Item label="Updated At">{'record.updatedAt'}</Descriptions.Item>
-                //             </Descriptions>
-                //         </div>
-                //     ),
-                // }}
-                options={{
-                    fullScreen: true,
-                    reload: true,
-                    setting: true,
-                    density: true,
-                }}
-                form={{
-                    // Get fields value and pass them to search function
-                    syncToUrl: (values, type) => {
-                        // if (type === 'get') {
-                        //     return {
-                        //         ...values,
-                        //         created_at: [values.startTime, values.endTime],
-                        //     }
-                        // }
-                        setSearchFilter(values)
-                        return values
-                    },
-                }}
-            /> */}
             <Modal
                 title="Change Status"
                 visible={actionVisible}

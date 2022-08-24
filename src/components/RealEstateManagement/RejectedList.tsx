@@ -12,18 +12,24 @@ import {
     Tooltip,
     Form,
     Dropdown,
+    Descriptions,
+    Row,
+    Col,
+    Select,
+    InputNumber,
+    TableProps,
 } from 'antd'
-import type { ColumnType } from 'antd/es/table'
 import type { TableRowSelection } from 'antd/es/table/interface'
 import React, { useEffect, useRef, useState } from 'react'
 import moment from 'moment'
 
 import {
-    SearchOutlined,
-    CalendarOutlined,
     EyeOutlined,
     ExclamationCircleOutlined,
     PlusOutlined,
+    SearchOutlined,
+    DownOutlined,
+    UpOutlined,
     EllipsisOutlined,
 } from '@ant-design/icons'
 import ImgError from '../../public/img/img-error.png'
@@ -35,15 +41,15 @@ import {
     fetchGetRealEstatesByStatus,
     getAllNewsRealEstateSearchFilter,
 } from '../../service/real-estate-all'
+// import { updateRealEstateStatus } from "../../../service/config";
 import { useTranslation } from 'react-i18next'
 import { fetchGetAllProjects } from '../../service/projects'
-import { ActionType, ProColumns, ProTable, TableDropdown } from '@ant-design/pro-components'
-
-// samplr data for table
+import { ActionType, ProColumns, ProTable, Search, TableDropdown } from '@ant-design/pro-components'
+import { PurposeStatusMenu, RealEstateStatusMenu } from '../../Hooks/valueEnumSelect'
 
 const { RangePicker } = DatePicker
 const { confirm } = Modal
-const { TextArea } = Input
+const { Option } = Select
 
 type DataType = {
     key: React.Key
@@ -61,16 +67,15 @@ function RejectedList() {
     const actionRef = useRef<ActionType>()
     const { t } = useTranslation()
     const { params } = useParams()
-    const [actionForm] = Form.useForm()
+    const [form] = Form.useForm()
     const [loading, setLoading] = useState(false)
     const [projectData, setProjectData] = useState<any>([])
     const [realEstateData, setRealEstateData] = useState<any>([])
     const [tableData, setTableData] = useState([])
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
     const [dropdownLoading, setDropdownLoading] = useState(false)
-    const [keyStoreArray, setKeyStoreArray] = useState<any>([])
     const [actionVisible, setActionVisible] = useState(false)
-    const [actionType, setActionType] = useState('')
+    // const [actionType, setActionType] = useState("");
     const [actionMessage, setActionMessage] = useState('')
     const [searchFilter, setSearchFilter] = useState(false)
 
@@ -86,6 +91,15 @@ function RejectedList() {
 
     // For filtering
     const [tableFilters, settableFilters] = useState({})
+
+    const defaultColConfig = {
+        xs: 24,
+        sm: 24,
+        md: 12,
+        lg: 12,
+        xl: 8,
+        xxl: 6,
+    }
 
     useEffect(() => {
         getRealEstatesByStatus()
@@ -125,7 +139,7 @@ function RejectedList() {
             size: pageSize,
             projectId: params === undefined ? '' : params,
         }
-        const response = await fetchGetRealEstatesByStatus(searchItems, 'REJECTED', setLoading)
+        const response = await fetchGetRealEstatesByStatus(searchItems, "REJECTED", setLoading)
         if (response) {
             if (response.status === 200) {
                 const newData: any = []
@@ -160,114 +174,15 @@ function RejectedList() {
         return
     }
 
-    const handleSearch = (
-        selectedKeys: string[],
-        confirm: (param?: FilterConfirmProps) => void,
-        dataIndex: any,
-    ) => {
-        confirm()
-        setSearchText(selectedKeys[0])
-        setSearchedColumn(dataIndex)
-        setSearchFilter(true)
+    const handleSelectRows = (rows: any) => { 
+        setSelectedRowKeys(rows)
+
     }
-
-    const getColumnSearchProps = (dataIndex: any): ColumnType<DataType> => ({
-        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
-            <div id="list-all-data-table" style={{ padding: 8 }}>
-                {dataIndex === 'startDate' || dataIndex === 'endDate' ? (
-                    <DatePicker.RangePicker
-                        onChange={(e: any) => {
-                            setSelectedKeys(e.length ? [e] : [])
-                        }}
-                        placeholder={['Start', 'End']}
-                        value={selectedKeys[0]}
-                        format="YYYY-MM-DD"
-                        style={{ marginBottom: 8 }}
-                    />
-                ) : (
-                    <Input
-                        ref={searchInput}
-                        placeholder={`Search ${
-                            dataIndex === 'name'
-                                ? 'name'
-                                : dataIndex === 'location'
-                                ? 'location'
-                                : dataIndex === 'investorName'
-                                ? 'investor name'
-                                : ''
-                        }`}
-                        value={selectedKeys[0]}
-                        onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-                        onPressEnter={() =>
-                            handleSearch(selectedKeys as string[], confirm, dataIndex)
-                        }
-                        style={{ marginBottom: 8, display: 'block' }}
-                    />
-                )}
-
-                <div className="d-flex justify-content-between">
-                    <Button
-                        className="table-btn-search"
-                        type="primary"
-                        onClick={() => {
-                            handleSearch(selectedKeys as string[], confirm, dataIndex)
-                            setLoading(true)
-                            setTimeout(() => {
-                                setLoading(false)
-                            }, 1000)
-                        }}
-                        icon={<SearchOutlined />}
-                        size="small"
-                        style={{ width: '48%' }}
-                    >
-                        Search
-                    </Button>
-                    <Button
-                        onClick={() => {
-                            clearFilters()
-                            confirm()
-                            setLoading(true)
-                            setTimeout(() => {
-                                setLoading(false)
-                            }, 1000)
-                            setSearchText('')
-                            setSearchFilter(false)
-                        }}
-                        size="small"
-                        style={{ width: '48%' }}
-                    >
-                        Reset
-                    </Button>
-                </div>
-            </div>
-        ),
-        filterIcon: (filtered: boolean) =>
-            dataIndex === 'startDate' || dataIndex === 'endDate' ? (
-                <CalendarOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
-            ) : (
-                <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
-            ),
-        onFilter: (value: any, record: any) =>
-            dataIndex === 'startDate' || dataIndex === 'endDate'
-                ? record[dataIndex]
-                : record[dataIndex]
-                      .toString()
-                      .toLowerCase()
-                      .includes((value as string).toLowerCase()),
-        onFilterDropdownVisibleChange: visible => {
-            if (visible) {
-                setTimeout(() => searchInput.current?.select(), 100)
-            }
-        },
-    })
 
     const columns: any = [
         {
             title: 'ID',
             dataIndex: 'id',
-            hideInSearch: true,
-            hideInForm: true,
-            editable: false,
             responsive: ['lg'],
             width: '5%',
         },
@@ -276,16 +191,16 @@ function RejectedList() {
             dataIndex: 'thumbnail',
             responsive: ['lg'],
             valueType: 'image',
-            width: '8%',
+            width: '7%',
             render: (text: string, record: any) => (
                 <img src={record.thumbnail} alt="thumbnail" style={{ width: 80, height: 60 }} />
             ),
+            search: false,
         },
         {
             title: 'Name',
             dataIndex: 'name',
             ellipsis: true,
-            // tip: 'If the title is too long, it will automatically shrink',
             formItemProps: {
                 rules: [
                     {
@@ -294,24 +209,21 @@ function RejectedList() {
                     },
                 ],
             },
-            width: '15%',
+            // width: '15%',
             render(name: any, record: any) {
                 return (
-                    <Tooltip placement="topLeft" title={record.name}>
-                        <Link to={'#'}>
-                            <span style={{ color: 'blue' }} className="real-estate-name">
-                                {name}
-                            </span>
-                            {/* <h5 style={{ color: 'blue' }} className="text-truncate">
-                              {record.name}
-                          </h5> */}
-                        </Link>
-                    </Tooltip>
+                    <Link to={'#'}>
+                        <span style={{ color: 'blue' }} className="real-estate-name">
+                            {name}
+                        </span>
+                    </Link>
                 )
             },
         },
         {
-            title: t('view-on-page'),
+            title: 'View on page',
+            search: false,
+            tip: 'View on page',
             render: (_: any, row: any) => {
                 return (
                     <span>
@@ -343,32 +255,17 @@ function RejectedList() {
                     </span>
                 )
             },
-            width: '8%',
-        },
-        {
-            title: 'purpose',
-            key: 'purpose',
-            dataIndex: 'purpose',
-            valueType: 'string',
-            width: '5%',
+            width: '10%',
         },
         {
             title: 'Location',
             dataIndex: 'location',
-            responsive: ['lg'],
-            // ellipsis: true,
+            // responsive: ['lg'],
+            ellipsis: true,
             // tip: 'If the title is too long, it will automatically shrink',
-            // formItemProps: {
-            //     rules: [
-            //         {
-            //             required: true,
-            //             message: 'Title is required!',
-            //         },
-            //     ],
-            // },
             render(name: any, record: any) {
                 return (
-                    <h5>{`${record.location}, ${record.ward[0].nameWithType}, ${record.district[0].nameWithType}, ${record.province[0].nameWithType}`}</h5>
+                    <span>{`${record.location}, ${record.ward[0].nameWithType}, ${record.district[0].nameWithType}, ${record.province[0].nameWithType}`}</span>
                 )
             },
             width: '15%',
@@ -376,61 +273,66 @@ function RejectedList() {
         {
             title: 'Start Date',
             dataIndex: 'startDate',
+            valueType: 'dateRange',
             filters: true,
             onFilter: true,
             ellipsis: true,
             responsive: ['lg'],
-            width: '10%',
-            // responsive: ["lg"],
-            // valueType: 'string',
-            // valueEnum: {
-            //     all: { text: 'Super long'.repeat(50) },
-            //     open: {
-            //         text: 'Unsolved',
-            //         status: 'Error',
-            //     },
-            //     closed: {
-            //         text: 'Solved',
-            //         status: 'Success',
-            //         disabled: true,
-            //     },
-            //     processing: {
-            //         text: 'Processing',
-            //         status: 'Processing',
-            //     },
-            // },
+            // width: '10%',
+            render(startDate: any, record: any) {
+                return (
+                    <div>
+                        <span>{record.startDate}</span>
+                    </div>
+                )
+            },
         },
         {
             title: 'End Date',
             key: 'endDate',
             dataIndex: 'endDate',
+            valueType: 'dateRange',
             responsive: ['lg'],
-            width: '10%',
-            // valueType: 'select',
-            // valueEnum: {
-            //     all: { text: 'Super long'.repeat(50) },
-            //     open: {
-            //         text: 'Unsolved',
-            //         status: 'Error',
-            //     },
-            //     closed: {
-            //         text: 'Solved',
-            //         status: 'Success',
-            //         disabled: true,
-            //     },
-            //     processing: {
-            //         text: 'Processing',
-            //         status: 'Processing',
-            //     },
-            // },
+            // width: '10%',
+            render(endDate: any, record: any) {
+                return (
+                    <div>
+                        <span>{record.endDate}</span>
+                    </div>
+                )
+            },
         },
-
+        {
+            title: 'Purpose',
+            key: 'purpose',
+            dataIndex: 'purpose',
+            valueType: 'checkbox',
+            valueEnum: PurposeStatusMenu(),
+            // width: '10%',
+            render: (purpose: string, record: any) => {
+                return (
+                    <div key={record.id}>
+                        {record.purpose === 'SELL' ? (
+                            <Tag color="blue" style={{ width: '80%', textAlign: 'center' }}>
+                                <span className="text-uppercase status-tag">{record.purpose}</span>
+                            </Tag>
+                        ) : (
+                            <Tag color="purple" style={{ width: '80%', textAlign: 'center' }}>
+                                <span className="text-uppercase status-tag">{record.purpose}</span>
+                            </Tag>
+                        )}
+                    </div>
+                )
+            },
+        },
         {
             title: 'Status',
             key: 'status',
             dataIndex: 'status',
-            valueType: 'string',
-            width: '10%',
+            search: false,
+            valueType: 'checkbox',
+            valueEnum: RealEstateStatusMenu(),
+            // width: '10%',
             render: (status: string, record: any) => {
                 return (
                     <div id="real-estate-status" key={record.id}>
@@ -465,72 +367,13 @@ function RejectedList() {
             title: 'Operate',
             valueType: 'option',
             key: 'option',
-            responsive: ['lg'],
+            // responsive: ['lg', 'md'],
             render: (text: any, record: any, _: any, action: any) => [
-                <a
-                    key="editable"
-                    // onClick={() => {
-                    //     action?.startEditable?.(record.id)
-                    // }}
-                >
-                    View Details
-                </a>,
-
-                // <TableDropdown
-                //     key="actionGroup"
-                //     onSelect={() => action?.reload()}
-                //     menus={[
-                //         { key: 'copy', name: 'Copy' },
-                //         { key: 'delete', name: 'Delete' },
-                //     ]}
-                // />,
+                <a key="editable">View Details</a>,
             ],
-            width: '10%',
+            // width: '6%',
         },
     ]
-
-    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-        setSelectedRowKeys(newSelectedRowKeys)
-    }
-
-    const rowSelection: TableRowSelection<DataType> = {
-        selectedRowKeys,
-        onChange: onSelectChange,
-        selections: [
-            Table.SELECTION_ALL,
-            Table.SELECTION_NONE,
-            // {
-            //     key: "odd",
-            //     text: "Select Odd Row",
-            //     onSelect: (changableRowKeys) => {
-            //         let newSelectedRowKeys = [];
-            //         newSelectedRowKeys = changableRowKeys.filter((_, index) => {
-            //             if (index % 2 !== 0) {
-            //                 return false;
-            //             }
-            //             return true;
-            //         });
-            //         setSelectedRowKeys(newSelectedRowKeys);
-            //     },
-            // },
-            // {
-            //     key: "even",
-            //     text: "Select Even Row",
-            //     onSelect: (changableRowKeys) => {
-            //         let newSelectedRowKeys = [];
-            //         newSelectedRowKeys = changableRowKeys.filter((_, index) => {
-            //             if (index % 2 !== 0) {
-            //                 return true;
-            //             }
-            //             return false;
-            //         });
-            //         setSelectedRowKeys(newSelectedRowKeys);
-            //     },
-            // },
-        ],
-    }
-
-    const hasSelected = selectedRowKeys.length > 0
 
     const showPromiseConfirm = (actionType: string) => {
         confirm({
@@ -548,8 +391,7 @@ function RejectedList() {
     }
 
     const handleOk = (actionType: any) => {
-        actionForm
-            .validateFields()
+        form.validateFields()
             .then(async values => {
                 setDropdownLoading(true)
                 const response = await fetchChangeRealEstateStatus(
@@ -563,7 +405,7 @@ function RejectedList() {
                         message.success('Successfully changed status of selected real estate')
                         setSelectedRowKeys([])
                         setActionVisible(false)
-                        actionForm.resetFields()
+                        form.resetFields()
                         getRealEstatesByStatus()
                     } else {
                         message.error(
@@ -589,7 +431,7 @@ function RejectedList() {
 
     const handleCancel = () => {
         setActionVisible(false)
-        actionForm.resetFields()
+        form.resetFields()
     }
 
     const menu = (
@@ -615,83 +457,90 @@ function RejectedList() {
         />
     )
 
+    const onChange = (searchValues: any) => {
+        const { id, name, startDate, endDate, location, purpose, status }: any = searchValues
+        console.log('searchValues', searchValues)
+
+        const searchParams = {
+            id: id ? id : '',
+            name: name ? name : '',
+            startFrom: startDate ? moment(startDate[0]).format('YYYY-MM-DDT00:00:00') : '',
+            startTo: startDate ? moment(startDate[1]).format('YYYY-MM-DDT23:59:59') : '',
+            endFrom: endDate ? moment(endDate[0]).format('YYYY-MM-DDT00:00:00') : '',
+            endTo: endDate ? moment(endDate[1]).format('YYYY-MM-DDT23:59:59') : '',
+            location: location ? location : '',
+            purpose: purpose && purpose.length > 0 ? purpose : '',
+            status: status && status.length > 0 ? status : '',
+        }
+        console.log('new params', searchParams)
+
+        settableFilters(searchParams)
+        setSearchFilter(true)
+    }
+
     return (
         <>
             <ProTable<any>
-                rowKey="id"
+                loading={loading}
                 dataSource={tableData}
                 columns={columns}
                 actionRef={actionRef}
-                // rowSelection={rowSelection}
-                // onChange={handleTableChange}
-                cardBordered
                 rowSelection={{
                     selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
-                    // defaultSelectedRowKeys: [1],
                 }}
-                tableAlertRender={({ selectedRowKeys, selectedRows, onCleanSelected }) => (
-                    <Space size={24}>
-                        <span>
-                            Selected {selectedRowKeys.length} items
-                            <a style={{ marginLeft: 8 }} onClick={onCleanSelected}>
-                                Cancel
-                            </a>
-                        </span>
-                    </Space>
-                )}
-                tableAlertOptionRender={() => {
-                    return (
-                        <Space size={16}>
-                            <a>批量删除</a>
-                            <a>导出数据</a>
-                        </Space>
-                    )
+                beforeSearchSubmit={(params: any) => {
+                    onChange(params)
+                    return {
+                        ...params,
+                    }
                 }}
-                columnsState={{
-                    persistenceKey: 'pro-table-singe-demos',
-                    persistenceType: 'localStorage',
-                    onChange(value) {
-                        console.log('value: ', value)
-                    },
-                }}
+                onSubmit={() => getRealEstatesByStatus()}
+                rowKey="id"
                 search={{
-                    labelWidth: 'auto',
+                    defaultCollapsed: true,
+                    span: defaultColConfig,
+                    labelWidth: 80,
                 }}
                 options={{
-                    setting: {
-                        listsHeight: 400,
-                    },
-                }}
-                form={{
-                    // Due to the configuration of transform, the submitted participation is different from the definition, which needs to be transformed here
-                    syncToUrl: (values, type) => {
-                        if (type === 'get') {
-                            return {
-                                ...values,
-                                created_at: [values.startTime, values.endTime],
-                            }
-                        }
-                        return values
-                    },
+                    fullScreen: true,
+                    reload: true,
+                    setting: true,
+                    density: true,
                 }}
                 pagination={{
-                    pageSize: pageSize,
-                    current: currentPage,
-                    // total: totalNews,
-                    // onChange: page => setcurrentPage(page),
+                    showSizeChanger: true,
+                    showQuickJumper: true,
+                    pageSizeOptions: ['10', '20', '50', '100'],
+                    showTotal: (total: number) => `Total ${total} items`,
                 }}
                 dateFormatter="string"
-                headerTitle="News List"
+                headerTitle="Real Estate"
                 toolBarRender={() => [
-                    <Button key="button" icon={<PlusOutlined />} type="primary">
-                        New
+                    <Button
+                        type="primary"
+                        onClick={() => {
+                            setActionVisible(true)
+                        }}
+                    >
+                        <PlusOutlined />
+                        <span>Create Real Estate</span>
                     </Button>,
-                    <Dropdown key="menu" overlay={menu}>
+                    <Dropdown overlay={menu} placement="bottomRight">
                         <Button>
-                            <EllipsisOutlined />
+                            <DownOutlined />
+                            <span>Change Status</span>
                         </Button>
                     </Dropdown>,
                 ]}
+                scroll={{ x: 500 }}
+            />
+            <Modal
+                title="Change Status"
+                visible={actionVisible}
+                onOk={() => handleOk('CHANGED')}
+                onCancel={() => handleCancel()}
+                okText="Change"
+                cancelText="Cancel"
             />
         </>
     )
